@@ -4,3 +4,4 @@
 
 Зависимости
 - https://github.com/superflexible/TGPuttyLib
+- DevExpress
