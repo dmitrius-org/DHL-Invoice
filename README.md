@@ -3,4 +3,4 @@
 
 
 Зависимости
-https://github.com/superflexible/TGPuttyLib
+- https://github.com/superflexible/TGPuttyLib
