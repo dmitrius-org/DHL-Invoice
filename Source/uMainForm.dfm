@@ -23,8 +23,6 @@ object MainForm: TMainForm
     Align = alClient
     Images = cxImageList
     TabOrder = 0
-    ExplicitWidth = 861
-    ExplicitHeight = 593
     object tsLog: TTabSheet
       Caption = 'DHL-Invoice'
       ImageIndex = 1

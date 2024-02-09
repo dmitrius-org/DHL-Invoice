@@ -1,4 +1,4 @@
-unit adAppUtils;
+п»їunit adAppUtils;
 
 interface
 
@@ -6,7 +6,7 @@ uses System.SysUtils, Windows, System.Classes, Winapi.ShlObj, Vcl.Menus,
   Vcl.Forms;
 
 
-/// <summary> Возвращает рабочий каталог приложения.</summary>
+/// <summary> Р’РѕР·РІСЂР°С‰Р°РµС‚ СЂР°Р±РѕС‡РёР№ РєР°С‚Р°Р»РѕРі РїСЂРёР»РѕР¶РµРЅРёСЏ.</summary>
 function GetSpecialPath(APath:string):string;
 
 implementation
