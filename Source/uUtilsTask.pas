@@ -49,12 +49,12 @@ type
     ///</summary>
     procedure DownloadFiles();
 
-    procedure LoadCsv(AFileName: String);
+    procedure LoadCsv(AFileName: String; DownloadFileID: integer);
 
     /// <summary>
     ///  FileNameInsert - добавление наименования скаченного файла в базу
     ///</summary>
-    procedure FileNameInsert(ATableName: string; AFileName: string);
+    function FileNameInsert(ATableName: string; AFileName: string): Integer;
 
     /// <summary>
     ///  TaskLogInsert - Добавление информации/записи о выполнении задачи.
@@ -115,7 +115,7 @@ end;
 
 { TTask }
 
-procedure TTask.LoadCsv(AFileName: String);
+procedure TTask.LoadCsv(AFileName: String; DownloadFileID: integer);
 var ParseCsv: TCSVParser;
     I : Integer;
     Query: TFDQuery;
@@ -140,10 +140,10 @@ begin
   INSERT INTO [tInvoice]
          ([Account_Nr],[OriginCountry],[InvoiceDate],[InvoiceNr],[CountryCode],[Name_1],[City],[Postcode],[DestStn],[DestCountry],[Prod],[PuDate],
           [Identcode],[ShippersReference],[Pcs],[VolWgt],[Wgt],[Wgt_Abr],[ChargeAmount],[ExtraChargeAmount],[VAT],[Total],[Discrepancy],[TotalinclFinanceCosts],
-          CreditNoteDate, CreditNote)
+          CreditNoteDate, CreditNote, DownloadFileID)
    select :Account_Nr,:OriginCountry,:InvoiceDate,:InvoiceNr,:CountryCode,:Name_1,:City,:Postcode,:DestStn,:DestCountry,:Prod,:PuDate,
           :Identcode,:ShippersReference,:Pcs,:VolWgt,:Wgt,:Wgt_Abr,:ChargeAmount,:ExtraChargeAmount,:VAT,:Total,:Discrepancy,:TotalinclFinanceCosts,
-          :CreditNoteDate, :CreditNote
+          :CreditNoteDate, :CreditNote, :DownloadFileID
   ''';
 
   try
@@ -183,6 +183,8 @@ begin
           Query.ParamByName('Total').Value                := GetValues('Total');
           Query.ParamByName('Discrepancy').Value          := GetValues('Discrepancy');
           Query.ParamByName('TotalinclFinanceCosts').Value:= GetValues('Total incl. Finance Costs');
+          Query.ParamByName('DownloadFileID').Value:= DownloadFileID;
+
           Query.ExecSQL;
         end;
 
@@ -335,6 +337,7 @@ var i:Integer;
     DownloadStream:TStream;
     APath:UnicodeString;
     Query: TFDQuery;
+    ID: integer;
 begin
   TaskLogInsert('i', 'Starten einer Aufgabe');
 
@@ -347,7 +350,9 @@ begin
       try
           FTP.ListDir('');
 
-          APath := TPath.GetTempPath();
+          APath := GetSpecialPath(regLoad('CSVPath'));
+          if APath = '' then APath := TPath.GetTempPath();
+
           logger.Info(APath);
 
           logger.Info('Обработка CSV файлов');
@@ -386,23 +391,38 @@ begin
               Query.Close;
 
               TaskLogInsert('i', 'Beginn der Dateiverarbeitung: ' +AFileName);
-
-              Application.ProcessMessages;
+              //Application.ProcessMessages;
 
               DownloadStream:=TFileStream.Create(AFullFileName,fmCreate);
               FTP.DownloadStream(Utf8Encode(AFileName), DownloadStream, false);
               DownloadStream.Free;
 
-              TaskLogInsert('i', 'Download file: ' +AFileName);
 
-              LoadCsv(AFullFileName);
+              TaskLogInsert('i', 'Download file: ' +AFileName);
+              logger.Info('Скачали файл: ' +AFileName);
+
+              ID := FileNameInsert('tDownloadFile', AFileName);
+              LoadCsv(AFullFileName, ID);
 
               TaskLogInsert('i', 'Upload to database, file: ' +AFileName);
 
-              FileNameInsert('tDownloadFile', AFileName);
+            // удаление данных с фтп
+            if regLoad('DeleteCSVFileInFTP')='True' then
+            begin
+              FTP.DeleteFile(Utf8Encode(AFileName));
+              TaskLogInsert('ok', AFileName + ' - Datei vom FTP gelöscht');
+              logger.Info(AFileName + '- Удалили файл с FTP');
+            end;
 
-              TaskLogInsert('ok', 'Hochgeladene Datei: ' +AFileName);
-              logger.Info('Скачали файл: ' +AFileName);
+            // удаление данных с диска
+            if (APath = '') and (FileExists(AFullFileName)) then
+            begin
+              if DeleteFile(AFullFileName) then
+              begin
+                logger.Info(AFileName + '- Удалили файл с диска');
+              end;
+            end;
+            TaskLogInsert('ok', 'Hochgeladene Datei: ' +AFileName);
           end;
 
 
@@ -533,7 +553,7 @@ begin
   FConnection := Value;
 end;
 
-procedure TTask.FileNameInsert(ATableName: string; AFileName: string);
+function TTask.FileNameInsert(ATableName: string; AFileName: string): Integer;
 var Query: TFDQuery;
 begin
   if FConnection.Connected then
@@ -541,9 +561,25 @@ begin
       try
         Query:= TFDQuery.Create(nil);
         Query.Connection :=FConnection;
-        Query.SQL.Text:= 'insert ' + ATableName + ' (FileName) select :FileName';
+        Query.SQL.Text:= '''
+        DECLARE @ID TABLE (ID NUMERIC(18, 0));
+
+        insert
+               !ATableName
+               (FileName)
+        OUTPUT INSERTED.ID INTO @ID(ID)
+        select :FileName;
+
+        select top 1 ID from @ID;
+
+        ''';
+
+        Query.MacroByName('ATableName').Value:=ATableName;
         Query.ParamByName('FileName').asString:=AFileName;
-        Query.ExecSQL;
+        Query.Prepare();
+        Query.Open();
+        Result :=   Query.FieldByName('ID').AsInteger;
+
         Query.Close;
       finally
         freeandnil(Query);

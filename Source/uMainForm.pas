@@ -14,7 +14,6 @@ type
   TMainForm = class(TForm)
     ApplicationEvents: TApplicationEvents;
     TrayIcon: TTrayIcon;
-    cxImageList: TcxImageList;
     MainPage: TPageControl;
     tsLog: TTabSheet;
     tsSettings: TTabSheet;

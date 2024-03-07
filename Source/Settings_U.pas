@@ -51,6 +51,9 @@ type
     cxShellBrowserDialog1: TcxShellBrowserDialog;
     PDFPath: TcxButtonEdit;
     cbDeleteFileInFTP: TcxCheckBox;
+    cxLabel9: TcxLabel;
+    CSVPath: TcxButtonEdit;
+    cbDeleteCSVFileInFTP: TcxCheckBox;
     procedure btnSaveClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnTestConnectClick(Sender: TObject);
@@ -60,6 +63,8 @@ type
     procedure btnParseStopClick(Sender: TObject);
     procedure btnTaskClearClick(Sender: TObject);
     procedure PDFPathPropertiesButtonClick(Sender: TObject;
+      AButtonIndex: Integer);
+    procedure CSVPathPropertiesButtonClick(Sender: TObject;
       AButtonIndex: Integer);
 
   private
@@ -151,10 +156,21 @@ begin
   regSave('PDFPath', PDFPath.Text);
   regSave('DeleteFileInFTP', cbDeleteFileInFTP.Checked);
 
+  regSave('CSVPath', CSVPath.Text);
+  regSave('DeleteCSVFileInFTP', cbDeleteCSVFileInFTP.Checked);
 
   logger.isActive := cbOnLog.Checked;
 
   MessageDlg('Vorgang abgeschlossen!',  TMsgDlgType.mtInformation, [mbOK], 0);
+end;
+
+procedure TSettings_F.CSVPathPropertiesButtonClick(Sender: TObject;
+  AButtonIndex: Integer);
+begin
+  if cxShellBrowserDialog1.execute then
+  Begin
+    CSVPath.Text:= cxShellBrowserDialog1.Path;
+  End;
 end;
 
 procedure TSettings_F.FormShow(Sender: TObject);
@@ -278,6 +294,9 @@ begin
   PDFPath.Text      := regLoad('PDFPath');
   cbOnLog.Checked   := regLoad('OnLog')='True';
   cbDeleteFileInFTP.Checked   := regLoad('DeleteFileInFTP')='True';
+
+  CSVPath.Text      := regLoad('CSVPath');
+  cbDeleteCSVFileInFTP.Checked   := regLoad('DeleteCSVFileInFTP')='True';
 
   OnTimer;
 end;

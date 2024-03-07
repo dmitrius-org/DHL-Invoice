@@ -2,7 +2,7 @@ object Settings_F: TSettings_F
   Left = 0
   Top = 0
   Caption = 'Settings'
-  ClientHeight = 571
+  ClientHeight = 613
   ClientWidth = 941
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -19,7 +19,6 @@ object Settings_F: TSettings_F
     Align = alTop
     Caption = 'Track&Trace'
     TabOrder = 0
-    ExplicitWidth = 938
     Height = 78
     Width = 941
     object cxLabel2: TcxLabel
@@ -53,7 +52,6 @@ object Settings_F: TSettings_F
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 1
-    ExplicitWidth = 938
     object cbTaskEnabled: TcxCheckBox
       Left = 32
       Top = 16
@@ -76,7 +74,6 @@ object Settings_F: TSettings_F
     Align = alTop
     Caption = 'Programm'
     TabOrder = 2
-    ExplicitWidth = 938
     Height = 56
     Width = 941
     object cbOnLog: TcxCheckBox
@@ -93,7 +90,6 @@ object Settings_F: TSettings_F
     Align = alTop
     Caption = 'Server Einstellungen'
     TabOrder = 3
-    ExplicitWidth = 938
     Height = 155
     Width = 941
     object cxLabel4: TcxLabel
@@ -157,13 +153,13 @@ object Settings_F: TSettings_F
   end
   object Panel2: TPanel
     Left = 0
-    Top = 530
+    Top = 572
     Width = 941
     Height = 41
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 4
-    ExplicitWidth = 938
+    ExplicitTop = 530
     DesignSize = (
       941
       41)
@@ -210,7 +206,6 @@ object Settings_F: TSettings_F
     Align = alTop
     Caption = 'FTP'
     TabOrder = 5
-    ExplicitWidth = 938
     DesignSize = (
       941
       149)
@@ -281,12 +276,41 @@ object Settings_F: TSettings_F
       Width = 446
     end
     object cbDeleteFileInFTP: TcxCheckBox
-      Left = 475
-      Top = 81
+      Left = 716
+      Top = 24
       AutoSize = False
       Caption = 'L'#246'schen heruntergeladener Dateien'
       Style.TransparentBorder = False
       TabOrder = 10
+      Height = 19
+      Width = 205
+    end
+    object cxLabel9: TcxLabel
+      Left = 475
+      Top = 82
+      Caption = 'Ordner zum Speichern von CSV-Dateien:'
+    end
+    object CSVPath: TcxButtonEdit
+      Left = 475
+      Top = 110
+      Anchors = [akLeft, akTop, akRight]
+      Properties.Buttons = <
+        item
+          Default = True
+          Kind = bkEllipsis
+        end>
+      Properties.ReadOnly = False
+      Properties.OnButtonClick = CSVPathPropertiesButtonClick
+      TabOrder = 12
+      Width = 446
+    end
+    object cbDeleteCSVFileInFTP: TcxCheckBox
+      Left = 716
+      Top = 82
+      AutoSize = False
+      Caption = 'L'#246'schen heruntergeladener Dateien'
+      Style.TransparentBorder = False
+      TabOrder = 13
       Height = 19
       Width = 205
     end
